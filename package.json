@@ -1,29 +1,48 @@
 {
-  "name": "vijectBackend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "format:check": "prettier --check .",
-    "server": "babel-node ./",
-    "start": "SET NODE_ENV=development  & nodemon --exec npm run server",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "husky install"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "eslint": "^8.56.0",
-    "express": "^4.18.2",
-    "npm-run-all": "^4.1.5"
-  },
-  "devDependencies": {
-    "@babel/cli": "^7.23.4",
-    "@babel/core": "^7.23.7",
-    "@babel/node": "^7.22.19",
-    "@babel/preset-env": "^7.23.8",
-    "nodemon": "^3.0.3",
-    "prettier": "^3.2.4"
-  }
+    "name": "vijectBackend",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "format": "prettier --write .",
+        "server": "babel-node ./",
+        "lint": "eslint .",
+        "start": "SET NODE_ENV=development  & nodemon --exec npm run server",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "prepare": "husky install"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "lint-staged"
+        }
+    },
+    "lint-staged": {
+        "*.js": [
+            "npm run lint",
+            "npm run format",
+            "git add ."
+        ]
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "bcryptjs": "^2.4.3",
+        "body-parser": "^1.20.2",
+        "cors": "^2.8.5",
+        "dotenv": "^16.3.2",
+        "eslint": "^8.56.0",
+        "express": "^4.18.2",
+        "jsonwebtoken": "^9.0.2",
+        "multer": "1.4.5-lts.1",
+        "npm-run-all": "^4.1.5"
+    },
+    "devDependencies": {
+        "@babel/cli": "^7.23.4",
+        "@babel/core": "^7.23.7",
+        "@babel/node": "^7.22.19",
+        "@babel/preset-env": "^7.23.8",
+        "nodemon": "^3.0.3",
+        "prettier": "^3.2.4"
+    }
 }

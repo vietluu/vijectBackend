@@ -2,12 +2,23 @@
     "env": {
         "browser": true,
         "commonjs": true,
-        "es2021": true
+        "es2021": true,
+        "node": true
     },
     "extends": "eslint:recommended",
     "parserOptions": {
         "ecmaVersion": 12
     },
     "rules": {
+        "no-param-reassign": [2, { "props": false }],
+        "no-useless-escape": 0,
+        "quotes": [2, "single", { "avoidEscape": true }],
+        "prefer-const": [
+            "error",
+            {
+                "destructuring": "any",
+                "ignoreReadBeforeAssign": false
+            }
+        ]
     }
 }
