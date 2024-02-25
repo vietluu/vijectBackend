@@ -1,11 +1,10 @@
-require('dotenv').config()
 const http = require('http')
 const cluster = require('cluster')
 const { cpus } = require('os')
 const process = require('process')
 const app = require('./app')
 const numCPUs = process.env.NODE_ENV === 'production' ? cpus().length : 1
-
+console.log(process.env.FRONTEND_URL)
 if (cluster.isPrimary) {
     console.log(`Primary ${process.pid} is running`)
 
