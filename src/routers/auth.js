@@ -4,6 +4,8 @@ const {
     register,
     getUserInfo,
     updateUserInfo,
+    searchUserByEmail,
+    changePassword,
 } = require('../controllers/auth')
 const APIError = require('../utils/error')
 const { isNumber } = require('../utils/util')
@@ -67,4 +69,22 @@ router.patch('/user', authUser, async (req, res, next) => {
         next(error)
     }
 })
+router.patch('/user/password', authUser, async (req, res, next) => {
+    try {
+        const user = await changePassword(req.user, req.body)
+        res.send(user)
+    } catch (error) {
+        next(error)
+    }
+})
+router.get('/user/find', authUser, async (req, res, next) => {
+    try {
+        console.log(req.query)
+        const user = await searchUserByEmail(req.query.email)
+        res.send(user)
+    } catch (error) {
+        next(error)
+    }
+})
+
 module.exports = router

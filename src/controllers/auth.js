@@ -1,18 +1,24 @@
 const APIError = require('../utils/error')
 const { generateToken } = require('../utils/jwt')
 const model = require('../models/user')
+const bcrypt = require('bcrypt')
 
 const controller = {}
 
 controller.loginByUsernamePassword = async (data) => {
     const { email, password, expiresInMins } = data
-    console.log(data)
     const user = await model
-        .findOne({ email: email.toLowerCase(), password })
+        .findOne({ email: email.toLowerCase() })
         .select('+password')
 
     if (!user) {
-        throw new APIError('Invalid credentials', 400)
+        throw new APIError('Tài khoản hoặc mật khẩu không chính xác!', 400)
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password)
+
+    if (!isPasswordCorrect) {
+        throw new APIError('Tài khoản hoặc mật khẩu không chính xác!', 400)
     }
 
     const payload = {
@@ -44,10 +50,13 @@ controller.register = async (data) => {
 
     if (user) throw new APIError('Tài khoản đã tồn tại', 400)
 
+    const hashedPassword = await bcrypt.hash(password, 10)
+
     const newUser = new model({
         fullName,
         email: email.toLowerCase(),
-        password,
+        password: hashedPassword,
+        image: 'https://res.cloudinary.com/dsfogayyq/image/upload/v1709348404/zzz6ft4gc5szscjacqtf.webp',
     })
 
     try {
@@ -80,12 +89,36 @@ controller.updateUserInfo = async (userId, data) => {
     }
 }
 
-controller.changePassword = async (userId, newPassword) => {
+controller.changePassword = async (userId, data) => {
     try {
-        const user = await model.findById(userId)
-        user.password = newPassword
+        const { oldPassword, newPassword } = data
+        const user = await model.findById(userId).select('+password')
+        const isPasswordCorrect = await bcrypt.compare(
+            oldPassword,
+            user.password
+        )
+        if (!isPasswordCorrect) {
+            throw new APIError('Mật khẩu cũ không chính xác!', 400)
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10)
+        user.password = hashedPassword
         user.updated_at = new Date()
-        await user.updateOne(user)
+        await user.save()
+        return user
+    } catch (err) {
+        throw new APIError(err.message, 400)
+    }
+}
+
+controller.searchUserByEmail = async (email) => {
+    try {
+        console.log(email)
+        const user = email
+            ? await model
+                  .find({ email: { $regex: email.toLowerCase() } })
+                  .select('-password -updated_at -created_at')
+            : null
+        console.log(user)
         return user
     } catch (err) {
         throw new APIError(err.message, 400)

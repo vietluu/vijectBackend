@@ -1,6 +1,6 @@
 const { requestWhitelist } = require('../constants')
 const { isNumber, dataInMemory } = require('../utils/util')
-const APIError = require('../ultil/error')
+const APIError = require('../utils/error')
 
 const helpers = {}
 
