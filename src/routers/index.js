@@ -4,10 +4,13 @@ const authRoutes = require('./auth')
 
 const uploadRoutes = require('./upload')
 const projectRoutes = require('./project')
+const labelRoutes = require('./label')
+const taskRoutes = require('./task')
 
 router.use('/auth', authRoutes)
-
+router.use('/task', taskRoutes)
 router.use('/upload', uploadRoutes)
 router.use('/project', projectRoutes)
+router.use('/label', labelRoutes)
 
 module.exports = router
