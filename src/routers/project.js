@@ -2,6 +2,7 @@ const router = require('express').Router()
 const authUser = require('../middleware/auth')
 const controller = require('../controllers/project')
 const checkProjectAccess = require('../middleware/projectAuth')
+const checkProjectMemberAccess = require('../middleware/projectMemberAuth')
 router.post('/create', authUser, async (req, res) => {
     try {
         const data = await controller.createProject(req.user, req.body)
@@ -18,7 +19,7 @@ router.get('/', authUser, async (req, res) => {
         res.status(400).send({ message: 'Máy chủ đã xảy ra lỗi' })
     }
 })
-router.get('/:id', authUser, async (req, res) => {
+router.get('/:id', authUser, checkProjectMemberAccess, async (req, res) => {
     try {
         const data = await controller.getProject(req.params.id)
         res.send(data)

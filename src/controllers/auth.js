@@ -1,6 +1,7 @@
 const APIError = require('../utils/error')
 const { generateToken } = require('../utils/jwt')
 const model = require('../models/user')
+const task = require('../models/task')
 const bcrypt = require('bcrypt')
 
 const controller = {}
@@ -125,4 +126,64 @@ controller.searchUserByEmail = async (email) => {
     }
 }
 
+controller.getUserTask = async (userId) => {
+    try {
+        const user = await getTasksRelatedToUser(userId)
+        const tasks = {
+            created: [],
+            assigned: [],
+            doing: [],
+            completed: [],
+        }
+
+        user.forEach((task) => {
+            console.log(task.statusId?.statusName)
+            if (task.creatorId._id.toString() === userId.toString()) {
+                tasks.created.push(task)
+            }
+            if (
+                task.assignedTo &&
+                task.assignedTo._id.toString() === userId.toString()
+            ) {
+                tasks.assigned.push(task)
+            }
+            if (
+                task?.statusId &&
+                task.statusId?._id.toString() === '65e5d6588eda3c4aefd272ff'
+            ) {
+                tasks.doing.push(task)
+            }
+            if (
+                task.statusId &&
+                task.statusId._id.toString() === '65e5d6c68eda3c4aefd27300'
+            ) {
+                tasks.completed.push(task)
+            }
+        })
+        return tasks
+    } catch (err) {
+        throw new APIError(err.message, 400)
+    }
+}
+async function getTasksRelatedToUser(userId) {
+    try {
+        // Tìm tất cả các công việc mà userId là người được gán hoặc là người tạo
+        const tasks = await task
+            .find({
+                $or: [{ assignedTo: userId }, { creatorId: userId }],
+            })
+            .populate('priorityId') // Kết hợp thông tin từ bảng Priority
+            .populate('statusId') // Kết hợp thông tin từ bảng TaskStatus
+            .populate('assignedTo', 'username') // Kết hợp thông tin người được gán
+            .populate('creatorId', 'username email image') // Kết hợp thông tin người tạo
+            .populate('projectId')
+            .exec()
+
+        return tasks
+    } catch (error) {
+        // Xử lý lỗi nếu có
+        console.error('Error retrieving tasks:', error)
+        throw error
+    }
+}
 module.exports = controller

@@ -6,6 +6,7 @@ const {
     updateUserInfo,
     searchUserByEmail,
     changePassword,
+    getUserTask,
 } = require('../controllers/auth')
 const APIError = require('../utils/error')
 const { isNumber } = require('../utils/util')
@@ -86,5 +87,12 @@ router.get('/user/find', authUser, async (req, res, next) => {
         next(error)
     }
 })
-
+router.get('/user/task', authUser, async (req, res, next) => {
+    try {
+        const user = await getUserTask(req.user)
+        res.send(user)
+    } catch (error) {
+        next(error)
+    }
+})
 module.exports = router

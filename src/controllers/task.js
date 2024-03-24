@@ -32,13 +32,13 @@ controller.getMembers = async (projectId) => {
         throw new APIError(error.message, 400)
     }
 }
-controller.getTasks = async (projectId) => {
+
+controller.getTaskById = async (taskId) => {
     try {
-        const res = await model
-            .find({ projectId })
-            .populate('priorityId')
-            .populate('statusId')
-            .populate('assignedTo', 'fullName email image')
+        const res = await model.findById(taskId)
+        if (!res) {
+            throw new APIError('error', 400)
+        }
         return res
     } catch (error) {
         throw new APIError(error.message, 400)
@@ -48,27 +48,66 @@ controller.updateTask = async (taskId, data) => {
     try {
         const check = await model.findById(taskId)
         if (!check) throw new APIError('Task not found', 400)
-        const res = await model.findByIdAndUpdate(
-            taskId,
-            { ...data, updatedAt: new Date() },
-            { new: true }
-        )
+        const res = await model
+            .findByIdAndUpdate(
+                taskId,
+                { ...data, updatedAt: new Date() },
+                { new: true }
+            )
+            .populate('priorityId')
+            .populate('statusId')
+            .populate('labelId')
+            .populate('assignedTo', 'fullName email image')
         return res
     } catch (error) {
         throw new APIError(error.message, 400)
     }
 }
-controller.createTask = async (projectId, userId, data) => {
+controller.createTask = async (projectId, data) => {
     try {
+        console.log(data)
         const check = await project.findById(projectId)
         if (!check) throw new APIError('Project not found', 400)
         const task = new model({
             ...data,
-            creatorId: userId,
+            creatorId: data.creatorId,
             projectId: projectId,
         })
         const res = await task.save()
         return res
+    } catch (error) {
+        throw new APIError(error.message, 400)
+    }
+}
+controller.getTasksWithPagination = async (projectId, page, limit = 20) => {
+    try {
+        const startIndex = (page - 1) * limit
+        const totalTasks = await model.countDocuments({ projectId })
+        const totalPages = Math.ceil(totalTasks / limit)
+
+        const tasks = await model
+            .find({ projectId })
+            .populate('priorityId')
+            .populate('statusId')
+            .populate('labelId')
+            .populate('assignedTo', 'fullName email image')
+            .skip(startIndex)
+            .limit(limit)
+        return {
+            tasks,
+            totalPages,
+            currentPage: page,
+            totalTasks,
+        }
+    } catch (error) {
+        throw new APIError(error.message, 400)
+    }
+}
+controller.deleteTask = async (taskId) => {
+    try {
+        const check = await model.findByIdAndDelete(taskId)
+        if (!check) throw new APIError('Task not found', 400)
+        return check
     } catch (error) {
         throw new APIError(error.message, 400)
     }

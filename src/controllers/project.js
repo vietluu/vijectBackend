@@ -1,6 +1,7 @@
 const project = require('../models/project')
 const APIError = require('../utils/error')
 const model = require('../models/user')
+const task = require('../models/task')
 const controller = {}
 
 controller.createProject = async (id, data) => {
@@ -67,6 +68,13 @@ controller.removeMember = async (id, data) => {
         if (!projectData.members.includes(user.id))
             throw new APIError('User not in project', 400)
         const index = projectData.members.indexOf(user.id)
+        const taskData = await task.find({ projectId: id, assignedTo: user.id })
+        taskData.forEach((element) => {
+            element.assignedTo = null
+            element.updatedAt = new Date()
+            element.save()
+        })
+
         projectData.members.splice(index, 1)
         projectData.updated_at = new Date()
         const res = await projectData.save()
