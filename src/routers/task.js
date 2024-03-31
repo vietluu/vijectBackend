@@ -32,7 +32,8 @@ router.get('/:id/tasks', checkProjectMemberAccess, async (req, res) => {
         const data = await controller.getTasksWithPagination(
             req.params.id,
             req.query.page,
-            req.query.limit
+            req.query.limit,
+            req.query.keyword
         )
         res.send(data)
     } catch (error) {

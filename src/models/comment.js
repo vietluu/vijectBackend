@@ -21,16 +21,16 @@ const CommentSchema = new mongoose.Schema({
     },
     updatedAt: {
         type: Date,
-        default: null,
+        default: Date.now,
     },
 })
 
-CommentSchema.pre('save', function (next) {
-    if (!this.isNew) {
-        this.updatedAt = Date.now()
-    }
-    next()
-})
+// CommentSchema.pre('save', function (next) {
+//     if (!this.isNew) {
+//         this.updatedAt = Date.now()
+//     }
+//     next()
+// })
 
 const Comment = mongoose.model('Comment', CommentSchema)
 

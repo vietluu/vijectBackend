@@ -1,20 +1,24 @@
 const router = require('express').Router()
 const controller = require('../controllers/comment')
 const checkProjectMemberAccess = require('../middleware/projectMemberAuth')
-
-router.post('/:id', checkProjectMemberAccess, async (req, res) => {
+const checkCommetAccess = require('../middleware/commentAuth')
+router.post('/:id/:taskId', checkProjectMemberAccess, async (req, res) => {
     try {
-        const data = await controller.createComment(req.params.id, req.body)
+        const data = await controller.createComment(
+            req.params.taskId,
+            req.userId,
+            req.body
+        )
         res.send(data)
     } catch (error) {
         res.status(400).send({ message: 'Máy chủ đã xảy ra lỗi' })
     }
 })
 
-router.get('/:id/', checkProjectMemberAccess, async (req, res) => {
+router.get('/:id/:taskId', checkProjectMemberAccess, async (req, res) => {
     try {
         const data = await controller.getCommentsWithPagination(
-            req.params.id,
+            req.params.taskId,
             req.query.page,
             req.query.limit
         )
@@ -24,11 +28,11 @@ router.get('/:id/', checkProjectMemberAccess, async (req, res) => {
     }
 })
 
-router.patch(':id/:commentId', checkProjectMemberAccess, async (req, res) => {
+router.patch('/:commentId', checkCommetAccess, async (req, res) => {
     try {
         const data = await controller.updateComment(
             req.params.commentId,
-            res.body
+            req.body
         )
         res.send(data)
     } catch (error) {
@@ -36,12 +40,9 @@ router.patch(':id/:commentId', checkProjectMemberAccess, async (req, res) => {
     }
 })
 
-router.delete(':id/:commentId', checkProjectMemberAccess, async (req, res) => {
+router.delete('/:commentId', checkCommetAccess, async (req, res) => {
     try {
-        const data = await controller.deleteComment(
-            req.params.commentId,
-            res.body
-        )
+        const data = await controller.deleteComment(req.params.commentId)
         res.send(data)
     } catch (error) {
         res.status(400).send({ message: 'Máy chủ đã xảy ra lỗi' })

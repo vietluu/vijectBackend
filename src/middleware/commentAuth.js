@@ -2,7 +2,7 @@ const { verifyToken } = require('../utils/jwt.js')
 const APIError = require('../utils/error.js')
 const model = require('../models/user.js')
 const comment = require('../models/comment.js')
-const task = require('../models/task.js')
+const project = require('../models/project.js')
 
 async function checkCommetAccess(req, res, next) {
     const token = req.header('Authorization')
@@ -18,13 +18,15 @@ async function checkCommetAccess(req, res, next) {
     if (!commentData) {
         return res.status(404).json({ message: 'Not found' })
     }
-    const taskData = await task.findOne(commentData.task)
-    if (!taskData) {
+    const projectData = await project.findOne(commentData.task.project)
+    if (!projectData) {
         return res.status(404).json({ message: 'Not found' })
     }
-    const userInTask = taskData.members.find(
-        (member) => member._id === user._id
-    )
+    const userInTask = projectData.members.find((member) => {
+        console.log(member.toString(), user._id.toString())
+        return member.toString() === user._id.toString()
+    })
+    console.log(userInTask, 'fff')
     if (!userInTask) {
         return res.status(403).json({ message: 'Forbidden' })
     }

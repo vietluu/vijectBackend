@@ -1,16 +1,16 @@
 const comment = require('../models/comment')
 const APIError = require('../utils/error')
-const user = require('../models/user')
 const controller = {}
 
-controller.createComment = async (id, data) => {
+controller.createComment = async (id, userId, data) => {
     try {
-        const { content, task } = data
+        console.log(data, id, userId)
         const newComment = new comment({
-            content,
-            task,
-            creator: id,
+            content: data.comment,
+            task: id,
+            creator: userId,
         })
+        console.log(newComment)
         const res = await newComment.save()
         return res
     } catch (error) {
@@ -31,13 +31,8 @@ controller.getCommentsWithPagination = async (id, page, limit) => {
     }
 }
 
-controller.deleteComment = async (id, userId) => {
+controller.deleteComment = async (id) => {
     try {
-        const userData = await user.findById(userId)
-        const commentData = await comment.findById(id)
-
-        if (userData._id.toString() !== commentData._id.toString())
-            throw new APIError('User not found', 400)
         const res = await comment.findByIdAndDelete(id)
         return res
     } catch (error) {
@@ -45,15 +40,12 @@ controller.deleteComment = async (id, userId) => {
     }
 }
 
-controller.updateComment = async (id, userId, data) => {
+controller.updateComment = async (id, data) => {
     try {
-        const userData = await user.findById(userId)
-        const commentData = await comment.findById(id)
+        console.log(id, 'sds', data)
 
-        if (userData._id.toString() !== commentData._id.toString())
-            throw new APIError('User not found', 400)
         const res = await comment
-            .findByIdAndUpdate(id, { content: data.content }, { new: true })
+            .findByIdAndUpdate(id, { content: data.comment }, { new: true })
             .populate('creator', 'fullName email image')
         return res
     } catch (error) {

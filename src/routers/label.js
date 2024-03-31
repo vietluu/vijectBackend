@@ -1,8 +1,9 @@
 const router = require('express').Router()
 const checkProjectAccess = require('../middleware/projectAuth')
+const checkProjectMemberAccess = require('../middleware/projectMemberAuth')
 const controller = require('../controllers/label')
 
-router.get('/:id', checkProjectAccess, async (req, res) => {
+router.get('/:id', checkProjectMemberAccess, async (req, res) => {
     try {
         const labels = await controller.listLabel(req.projectId, req.body)
         res.json(labels)

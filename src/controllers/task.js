@@ -79,14 +79,25 @@ controller.createTask = async (projectId, data) => {
         throw new APIError(error.message, 400)
     }
 }
-controller.getTasksWithPagination = async (projectId, page, limit = 20) => {
+controller.getTasksWithPagination = async (
+    projectId,
+    page,
+    limit = 20,
+    keyword
+) => {
     try {
         const startIndex = (page - 1) * limit
         const totalTasks = await model.countDocuments({ projectId })
         const totalPages = Math.ceil(totalTasks / limit)
-
+        console.log(keyword)
         const tasks = await model
-            .find({ projectId })
+            .find({
+                projectId,
+                $or: [
+                    { taskName: { $regex: keyword || '', $options: 'i' } },
+                    { description: { $regex: keyword || '', $options: 'i' } },
+                ],
+            })
             .populate('priorityId')
             .populate('statusId')
             .populate('labelId')

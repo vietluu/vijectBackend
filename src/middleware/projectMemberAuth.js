@@ -23,6 +23,7 @@ async function checkProjectMemberAccess(req, res, next) {
     if (!projectData.members.includes(user._id)) {
         return res.status(403).json({ message: 'Forbidden' })
     }
+    req.userId = user._id.toString()
     req.projectId = projectId // Gán projectId vào req để sử dụng ở middleware hoặc định tuyến tiếp theo
     next() // Chuyển đến middleware hoặc định tuyến tiếp theo nếu có
 }
