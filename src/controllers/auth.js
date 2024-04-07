@@ -149,17 +149,20 @@ controller.getUserTask = async (userId) => {
             const newTask = { ...task.toObject(), subTasks: subtasks[index] }
             if (newTask.creatorId._id.toString() === userId.toString()) {
                 tasks.created.push(newTask)
-            } else if (
+            }
+            if (
                 newTask.assignedTo &&
                 newTask.assignedTo._id.toString() === userId.toString()
             ) {
                 tasks.assigned.push(newTask)
-            } else if (
-                newTask?.statusId &&
-                newTask.statusId?._id.toString() === '65e5d6588eda3c4aefd272ff'
+            }
+            if (
+                newTask.statusId &&
+                newTask.statusId._id.toString() === '65e5d6588eda3c4aefd272ff'
             ) {
                 tasks.doing.push(newTask)
-            } else if (
+            }
+            if (
                 newTask.statusId &&
                 newTask.statusId._id.toString() === '65e5d6c68eda3c4aefd27300'
             ) {
