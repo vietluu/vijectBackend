@@ -26,7 +26,6 @@ async function checkCommetAccess(req, res, next) {
         console.log(member.toString(), user._id.toString())
         return member.toString() === user._id.toString()
     })
-    console.log(userInTask, 'fff')
     if (!userInTask) {
         return res.status(403).json({ message: 'Forbidden' })
     }

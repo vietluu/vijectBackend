@@ -134,4 +134,34 @@ controller.changeOwner = async (id, data) => {
     }
 }
 
+controller.getTasksByStatus = async (projectId) => {
+    try {
+        const projectData = await project.findById(projectId)
+        if (!projectData) throw new APIError('Project not found', 400)
+
+        const members = projectData.members
+        const tasksByStatus = {}
+
+        for (const memberId of members) {
+            const memberTasks = await task.find({
+                projectId,
+                assignedTo: memberId,
+            })
+            for (const task of memberTasks) {
+                const status = task.status
+                if (!tasksByStatus[memberId]) {
+                    tasksByStatus[memberId] = {}
+                }
+                if (!tasksByStatus[memberId][status]) {
+                    tasksByStatus[memberId][status] = 0
+                }
+                tasksByStatus[memberId][status]++
+            }
+        }
+
+        return tasksByStatus
+    } catch (error) {
+        throw new APIError(error.message, 400)
+    }
+}
 module.exports = controller

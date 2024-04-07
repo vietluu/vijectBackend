@@ -69,4 +69,13 @@ router.patch('/:id/member', checkProjectAccess, async (req, res) => {
         res.status(400).send({ message: 'Máy chủ đã xảy ra lỗi' })
     }
 })
+router.get('/:id/report', checkProjectAccess, async (req, res) => {
+    try {
+        console.log(req.projectId)
+        const data = await controller.getTasksByStatus(req.projectId)
+        res.send(data)
+    } catch (error) {
+        res.status(400).send({ message: 'Máy chủ đã xảy ra lỗi' })
+    }
+})
 module.exports = router

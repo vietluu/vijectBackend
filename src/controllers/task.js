@@ -3,6 +3,8 @@ const status = require('../models/taskStatus')
 const priority = require('../models/priority')
 const model = require('../models/task')
 const project = require('../models/project')
+const comment = require('../models/comment')
+const subTask = require('../models/subTask')
 const controller = {}
 
 controller.getpriority = async () => {
@@ -35,11 +37,17 @@ controller.getMembers = async (projectId) => {
 
 controller.getTaskById = async (taskId) => {
     try {
-        const res = await model.findById(taskId)
+        const res = await model
+            .findById(taskId)
+            .populate('priorityId')
+            .populate('statusId')
+            .populate('labelId')
+            .populate('assignedTo', 'fullName email image')
+        const subTasks = await subTask.find({ taskId })
         if (!res) {
             throw new APIError('error', 400)
         }
-        return res
+        return { ...res._doc, subTasks: subTasks }
     } catch (error) {
         throw new APIError(error.message, 400)
     }
@@ -104,6 +112,7 @@ controller.getTasksWithPagination = async (
             .populate('assignedTo', 'fullName email image')
             .skip(startIndex)
             .limit(limit)
+
         return {
             tasks,
             totalPages,
@@ -118,6 +127,7 @@ controller.deleteTask = async (taskId) => {
     try {
         const check = await model.findByIdAndDelete(taskId)
         if (!check) throw new APIError('Task not found', 400)
+        await comment.deleteMany({ taskId })
         return check
     } catch (error) {
         throw new APIError(error.message, 400)

@@ -9,6 +9,10 @@ const taskSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    date_end: {
+        type: Date,
+        default: null,
+    },
     creatorId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

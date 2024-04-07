@@ -3,7 +3,7 @@ const { generateToken } = require('../utils/jwt')
 const model = require('../models/user')
 const task = require('../models/task')
 const bcrypt = require('bcrypt')
-
+const subTask = require('../models/subTask')
 const controller = {}
 
 controller.loginByUsernamePassword = async (data) => {
@@ -128,7 +128,15 @@ controller.searchUserByEmail = async (email) => {
 
 controller.getUserTask = async (userId) => {
     try {
-        const user = await getTasksRelatedToUser(userId)
+        const data = await getTasksRelatedToUser(userId)
+        const subtaskPromises = data.map((task) => {
+            return subTask.find({ taskId: task._id }).exec() // Tìm các subtask với taskId tương ứng
+        })
+
+        // Sử dụng Promise.all để chờ tất cả các promise hoàn thành
+        const subtasks = await Promise.all(subtaskPromises)
+
+        // Khởi tạo object chứa tasks theo các trạng thái
         const tasks = {
             created: [],
             assigned: [],
@@ -136,39 +144,40 @@ controller.getUserTask = async (userId) => {
             completed: [],
         }
 
-        user.forEach((task) => {
-            console.log(task.statusId?.statusName)
-            if (task.creatorId._id.toString() === userId.toString()) {
-                tasks.created.push(task)
-            }
-            if (
-                task.assignedTo &&
-                task.assignedTo._id.toString() === userId.toString()
+        // Duyệt qua mỗi task và gán subtasks tương ứng
+        data.forEach((task, index) => {
+            const newTask = { ...task.toObject(), subTasks: subtasks[index] }
+            if (newTask.creatorId._id.toString() === userId.toString()) {
+                tasks.created.push(newTask)
+            } else if (
+                newTask.assignedTo &&
+                newTask.assignedTo._id.toString() === userId.toString()
             ) {
-                tasks.assigned.push(task)
-            }
-            if (
-                task?.statusId &&
-                task.statusId?._id.toString() === '65e5d6588eda3c4aefd272ff'
+                tasks.assigned.push(newTask)
+            } else if (
+                newTask?.statusId &&
+                newTask.statusId?._id.toString() === '65e5d6588eda3c4aefd272ff'
             ) {
-                tasks.doing.push(task)
-            }
-            if (
-                task.statusId &&
-                task.statusId._id.toString() === '65e5d6c68eda3c4aefd27300'
+                tasks.doing.push(newTask)
+            } else if (
+                newTask.statusId &&
+                newTask.statusId._id.toString() === '65e5d6c68eda3c4aefd27300'
             ) {
-                tasks.completed.push(task)
+                tasks.completed.push(newTask)
             }
         })
+
+        // Trả về dữ liệu cho client
         return tasks
     } catch (err) {
         throw new APIError(err.message, 400)
     }
 }
+
 async function getTasksRelatedToUser(userId) {
     try {
         // Tìm tất cả các công việc mà userId là người được gán hoặc là người tạo
-        const tasks = await task
+        const data = await task
             .find({
                 $or: [{ assignedTo: userId }, { creatorId: userId }],
             })
@@ -177,9 +186,8 @@ async function getTasksRelatedToUser(userId) {
             .populate('assignedTo', 'username') // Kết hợp thông tin người được gán
             .populate('creatorId', 'username email image') // Kết hợp thông tin người tạo
             .populate('projectId')
-            .exec()
 
-        return tasks
+        return data
     } catch (error) {
         // Xử lý lỗi nếu có
         console.error('Error retrieving tasks:', error)
