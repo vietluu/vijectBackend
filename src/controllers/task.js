@@ -125,6 +125,8 @@ controller.getTasksWithPagination = async (
 }
 controller.deleteTask = async (taskId) => {
     try {
+        await subTask.deleteMany({ taskId })
+        await comment.deleteMany({ task: taskId })
         const check = await model.findByIdAndDelete(taskId)
         if (!check) throw new APIError('Task not found', 400)
         await comment.deleteMany({ taskId })

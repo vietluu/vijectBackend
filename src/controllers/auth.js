@@ -74,7 +74,6 @@ controller.register = async (data) => {
 }
 
 controller.updateUserInfo = async (userId, data) => {
-    console.log(userId, data)
     const updatedData = {
         ...data,
         updated_at: new Date(),
