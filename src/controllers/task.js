@@ -73,8 +73,8 @@ controller.updateTask = async (taskId, data) => {
 }
 controller.createTask = async (projectId, data) => {
     try {
-        console.log(data)
         const check = await project.findById(projectId)
+        console.log(check)
         if (!check) throw new APIError('Project not found', 400)
         const task = new model({
             ...data,

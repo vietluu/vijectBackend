@@ -11,7 +11,6 @@ const taskSchema = new mongoose.Schema({
     },
     date_end: {
         type: Date,
-        default: null,
     },
     creatorId: {
         type: mongoose.Schema.Types.ObjectId,

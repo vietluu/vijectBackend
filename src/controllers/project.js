@@ -4,6 +4,7 @@ const model = require('../models/user')
 const task = require('../models/task')
 const Comment = require('../models/comment')
 const Subtask = require('../models/subTask')
+const status = require('../models/taskStatus')
 const controller = {}
 
 controller.createProject = async (id, data) => {
@@ -174,22 +175,27 @@ controller.changeOwner = async (id, data) => {
 
 controller.getTasksByStatus = async (projectId) => {
     try {
-        const taskStatusCounts = await task.aggregate([
-            {
-                $match: { projectId: projectId }, // Lọc các task thuộc projectId cụ thể
-            },
-            {
-                $group: {
-                    _id: '$status', // Nhóm các task theo trạng thái
-                    count: { $sum: 1 }, // Đếm số lượng task trong mỗi nhóm
-                },
-            },
-        ])
+        const statuses = await status.find() // Lấy danh sách tất cả các trạng thái
+        console.log('Statuses:', statuses)
 
-        return taskStatusCounts
+        const tasksByStatus = {}
+
+        // Duyệt qua mỗi trạng thái và thống kê số lượng task
+        for (const status of statuses) {
+            console.log('Status:', status)
+            const count = await task.countDocuments({
+                status: status._id,
+                projectId,
+            }) // Đảm bảo projectId được truyền vào và sử dụng chính xác trong truy vấn
+            console.log('Count:', count)
+            tasksByStatus[status.statusName] = count
+        }
+
+        console.log('Tasks by Status:', tasksByStatus)
+        return tasksByStatus // Trả về đối tượng thống kê
     } catch (error) {
-        console.error('Lỗi khi thống kê số task theo trạng thái:', error)
-        throw error
+        console.error('Error:', error)
+        throw error // Ném lỗi nếu có lỗi xảy ra
     }
 }
 module.exports = controller
